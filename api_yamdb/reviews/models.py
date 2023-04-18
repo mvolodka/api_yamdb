@@ -1,7 +1,4 @@
-from django.contrib.auth import get_user_model
 from django.db import models
-
-User = get_user_model()
 
 
 class Genre(models.Model):
@@ -36,7 +33,8 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='titles',
-        verbose_name='Категория'
+        verbose_name='Категория',
+        help_text='Выберите категорию'
     )
 
     class Meta:
