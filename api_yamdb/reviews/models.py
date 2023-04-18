@@ -54,7 +54,7 @@ class Review(models.Model):
                 fields=['title', 'author'],
                 name='unique review')
         ]
-        ordering = ['pub_date']
+        ordering = ['-pub_date']
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
 
@@ -89,7 +89,7 @@ class Comment(models.Model):
     )
 
     class Meta:
-        ordering = ['pub_date']
+        ordering = ['-pub_date']
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
