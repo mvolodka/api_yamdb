@@ -12,6 +12,8 @@ class Title(models.Model):
 
 class Review(models.Model):
     # id,title_id,text,author,score,pub_date - поля из csv
+    # for test api
+    # title = models.IntegerField(default=1)
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -24,6 +26,8 @@ class Review(models.Model):
         help_text=_('Введите текст отзыва'),
         blank=False
     )
+    # for test api
+    # author = models.IntegerField(default=1)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -76,6 +80,8 @@ class Comment(models.Model):
         help_text=_('Введите текст комментария'),
         blank=False
     )
+    # for test api
+    # author = models.IntegerField(default=1)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
