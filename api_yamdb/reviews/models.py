@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class Genre(models.Model):
@@ -25,7 +28,20 @@ class Category(models.Model):
 
 class Title(models.Model):
     name = models.CharField('Название произведения', max_length=100)
-    year = models.PositiveSmallIntegerField('Год выпуска')
+    year = models.PositiveSmallIntegerField(
+        'Год выпуска',
+        validators=[
+            MinValueValidator(
+                0,
+                message='Значение года не может быть меньше 0!'
+            ),
+            MaxValueValidator(
+                int(datetime.now().year),
+                message='Указанный год еще не наступил!'
+            )
+        ],
+        db_index=True
+    )
     description = models.TextField('Описание')
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
