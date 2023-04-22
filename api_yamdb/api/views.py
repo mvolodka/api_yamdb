@@ -1,39 +1,40 @@
-from api.filters import TitleFilter
-from rest_framework import filters, viewsets
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework import filters, mixins, viewsets
+from rest_framework.pagination import LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from reviews.models import Category, Genre, Title
 
 from .serializers import (CategorySerializer, GenreSerializer,
-                          TitleGetSerializer,
-                          TitleWriteSerializer)
+                          TitleGETSerializer, TitleSerializer)
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class CreateRetrieveDestroyViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    pagination_class = LimitOffsetPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+class GenreViewSet(CreateRetrieveDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_backends = (filters.SearchFilter)
-    search_fields = ("=name",)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(CreateRetrieveDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_backends = (filters.SearchFilter)
-    search_fields = ("=name",)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    filterset_class = TitleFilter
+    serializer_class = TitleSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('category_slug', 'genre_slug', 'name', 'year')
 
     def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            return TitleGetSerializer
-        return TitleWriteSerializer
+        if self.request.method == 'GET':
+            return TitleGETSerializer
+        return TitleSerializer
