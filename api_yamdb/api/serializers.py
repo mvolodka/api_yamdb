@@ -24,7 +24,15 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        exclude = ('id',)
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
 
     def get_rating(self, obj):
         rating = Review.objects.filter(
@@ -48,7 +56,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        exclude = ('id',)
+        fields = '__all__'
 
     def to_representation(self, title):
         serializer = TitleGETSerializer(title)
