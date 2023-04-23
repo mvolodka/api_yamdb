@@ -40,3 +40,4 @@ class SuperUserOrAdminOrModeratorOrAuthor(permissions.BasePermission):
                  or request.user.is_moderator()
                  or request.user == obj.author)
         )
+
