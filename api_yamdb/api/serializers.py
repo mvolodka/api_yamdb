@@ -1,9 +1,8 @@
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from reviews.models import Category, Genre, Title, Review, Comment
 
-from reviews.models import User
+from reviews.models import Category, Genre, Title, Review, Comment, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -101,7 +100,7 @@ class GetTokenSerializer(serializers.Serializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    title = serializers.SlugField(
+    title = serializers.SlugRelatedField(
         slug_field='name',
         read_only=True
     )
@@ -138,7 +137,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    review = serializers.SlugField(
+    review = serializers.SlugRelatedField(
         slug_field='text',
         read_only=True
     )
