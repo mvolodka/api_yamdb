@@ -1,15 +1,15 @@
-from .validators import validate_year, validate_slug
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from .validators import validate_year, validate_slug
 
 CHOICES = (
     ('user', 'Пользователь'),
     ('moderator', 'Модератор'),
     ('admin', 'Админ'),
 )
-
 
 
 class Genre(models.Model):
@@ -140,7 +140,7 @@ class User(AbstractUser):
 
     def is_admin(self):
         return self.role == 'admin'
-        
+
     def is_moderator(self):
         return self.role == 'moderator'
 
