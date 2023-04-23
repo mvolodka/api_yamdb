@@ -7,8 +7,9 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import filters, mixins, permissions, status, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
-from reviews.models import Category, Genre, Title
+
 from api.mixins import CreateRetrieveDestroyViewSet
+from reviews.models import Category, Genre, Title
 from reviews.models import User, Review, Title
 
 from .permissions import SuperUserOrAdmin, SuperUserOrAdminOrModeratorOrAuthor
