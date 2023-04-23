@@ -24,12 +24,13 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        exclude = ('id',)
+        fields = '__all__'
 
     def get_rating(self, obj):
         rating = Review.objects.filter(
             title=obj.id
         ).aggregate(Avg('score'))['score__avg']
+        print(f'!!!!!!!!!!{rating}')
         if rating is not None:
             return round(rating)
         return None
@@ -48,7 +49,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        exclude = ('id',)
+        fields = '__all__'
 
     def to_representation(self, title):
         serializer = TitleGETSerializer(title)
@@ -121,6 +122,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
+        """Запрещает пользователю на одно произведение
+        оставлять более одного отзыва."""
         title = get_object_or_404(
             Title, pk=self.context.get('view').kwargs.get('title_id'))
         request = self.context.get('request')
