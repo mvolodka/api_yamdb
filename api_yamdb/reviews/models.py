@@ -1,6 +1,6 @@
 from django.db import models
 
-from .validators import validate_year, slug_validator
+from .validators import validate_year, validate_slug
 
 
 class Review(models.Model):
@@ -16,7 +16,7 @@ class Genre(models.Model):
     slug = models.SlugField(
         max_length=50,
         verbose_name='slug',
-        validators=[slug_validator],
+        validators=[validate_slug],
         unique=True
     )
 
@@ -38,7 +38,7 @@ class Category(models.Model):
     slug = models.SlugField(
         max_length=50,
         verbose_name='slug',
-        validators=[slug_validator],
+        validators=[validate_slug],
         unique=True
     )
 
