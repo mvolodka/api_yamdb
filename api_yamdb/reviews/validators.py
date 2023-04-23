@@ -12,7 +12,8 @@ def validate_year(year):
         )
 
 
-slug_validator = [RegexValidator(
-    regex=r'^[-a-zA-Z0-9_]+$',
-    message='Поле "slug" содержит недопустимый символ.'
-)]
+def validate_slug(slug):
+    return [RegexValidator(
+        regex=r'^[-a-zA-Z0-9_]+$',
+        message='Поле "slug" содержит недопустимый символ.'
+    )]
