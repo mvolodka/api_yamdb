@@ -12,7 +12,8 @@ from api.mixins import CreateRetrieveDestroyViewSet
 from reviews.models import Category, Genre, Title
 from reviews.models import User, Review, Title
 
-from .permissions import SuperUserOrAdmin, SuperUserOrAdminOrModeratorOrAuthor
+from .permissions import (SuperUserOrAdmin, AnonimReadOnly,
+                          SuperUserOrAdminOrModeratorOrAuthor)
 from .serializers import (GetTokenSerializer, UserCreateSerializer,
                           UserSerializer, CategorySerializer, GenreSerializer,
                           TitleGETSerializer, TitleSerializer,
@@ -103,6 +104,7 @@ class CategoryViewSet(CreateRetrieveDestroyViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    permission_classes = (AnonimReadOnly | SuperUserOrAdmin,)
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('category_slug', 'genre_slug', 'name', 'year')
