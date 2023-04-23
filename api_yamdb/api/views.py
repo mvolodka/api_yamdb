@@ -1,16 +1,19 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-
+from rest_framework import filters, mixins, permissions, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from reviews.models import Category, Genre, Title
+from api.mixins import CreateRetrieveDestroyViewSet
 from reviews.models import User
 
 from .permissions import SuperUserOrAdmin, SuperUserOrAdminOrModeratorOrAuthor
 from .serializers import (GetTokenSerializer, UserCreateSerializer,
-                          UserSerializer)
+                          UserSerializer, CategorySerializer, GenreSerializer,
+                          TitleGETSerializer, TitleSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -85,21 +88,23 @@ class GetTokenViewSet(mixins.CreateModelMixin,
         return Response(f'Ваш токен: {token}', status=status.HTTP_200_OK)
 
 
-class GenresViewSet(viewsets.ModelViewSet):
-    ...
+class GenreViewSet(CreateRetrieveDestroyViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
 
 
-class CategoriesViewSet(viewsets.ModelViewSet):
-    ...
+class CategoryViewSet(CreateRetrieveDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    ...
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('category_slug', 'genre_slug', 'name', 'year')
 
-
-class ReviewsViewSet(viewsets.ModelViewSet):
-    ...
-
-
-class CommentsViewSet(viewsets.ModelViewSet):
-    ...
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleGETSerializer
+        return TitleSerializer
