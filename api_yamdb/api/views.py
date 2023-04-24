@@ -1,23 +1,23 @@
+from api.filters import TitleFilter
+from api.mixins import CreateRetrieveDestroyViewSet
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework import filters, mixins, permissions, status, viewsets
-from django_filters.rest_framework import DjangoFilterBackend
+from reviews.models import Category, Genre, Review, Title, User
 
-from api.mixins import CreateRetrieveDestroyViewSet
-from reviews.models import Category, Genre, Title
-from reviews.models import User, Review, Title
-
-from .permissions import (SuperUserOrAdmin, AnonimReadOnly,
-                          SuperUserOrAdminOrModeratorOrAuthor)
-from .serializers import (GetTokenSerializer, UserCreateSerializer,
-                          UserSerializer, CategorySerializer, GenreSerializer,
-                          TitleGETSerializer, TitleSerializer,
-                          CommentSerializer, ReviewSerializer)
+from .permissions import (AnonimReadOnly, SuperUserOrAdmin,
+                          SuperUserOrAdminOrModeratorOrAuthor,)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, GetTokenSerializer,
+                          ReviewSerializer, TitleGETSerializer,
+                          TitleSerializer, UserCreateSerializer,
+                          UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -107,7 +107,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (AnonimReadOnly | SuperUserOrAdmin,)
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('category_slug', 'genre_slug', 'name', 'year')
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -116,7 +116,9 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
+    permission_classes = (
+        SuperUserOrAdminOrModeratorOrAuthor,
+    )
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
 
