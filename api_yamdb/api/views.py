@@ -115,7 +115,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Review."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
+    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+                          permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
 
@@ -126,7 +127,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """Получаем объект класса Review у объекта класса Title."""
     def get_queryset(self):
         title = self.get_title()
-        return title.reviews
+        return title.reviews.all()
 
     """Создаем объект класса Review у объекта класса Title."""
     def perform_create(self, serializer):
@@ -138,7 +139,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Comment."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
+    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+                          permissions.IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
 
@@ -151,7 +153,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Получаем объект класса Comment у объекта класса Review."""
     def get_queryset(self):
         review = self.get_review()
-        return review.comments
+        return review.comments.all()
 
     """Создание объекта класса Comment у объекта класса Review."""
     def perform_create(self, serializer):
