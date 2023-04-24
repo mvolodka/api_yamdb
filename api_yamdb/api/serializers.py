@@ -30,7 +30,6 @@ class TitleGETSerializer(serializers.ModelSerializer):
         rating = Review.objects.filter(
             title=obj.id
         ).aggregate(Avg('score'))['score__avg']
-        print(f'!!!!!!!!!!{rating}')
         if rating is not None:
             return round(rating)
         return None
@@ -111,16 +110,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault()
     )
 
-    class Meta:
-        model = Review
-        fields = '__all__'
-        validators = [
-            serializers.UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('title', 'author')
-            )
-        ]
-
     def validate(self, data):
         """Запрещает пользователю на одно произведение
         оставлять более одного отзыва."""
@@ -137,6 +126,10 @@ class ReviewSerializer(serializers.ModelSerializer):
                     'На одно произведение пользователь может'
                     'оставить только один отзыв.')
         return data
+
+    class Meta:
+        model = Review
+        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):

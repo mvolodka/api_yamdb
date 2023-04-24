@@ -1,3 +1,4 @@
+from api.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -12,7 +13,9 @@ from api.mixins import CreateRetrieveDestroyViewSet
 from reviews.models import Category, Genre, Title
 from reviews.models import User, Review, Title
 
-from .permissions import SuperUserOrAdmin, SuperUserOrAdminOrModeratorOrAuthor
+from .permissions import (SuperUserOrAdmin,
+                          SuperUserOrAdminOrModeratorOrAuthor,
+                          AnonimReadOnly)
 from .serializers import (GetTokenSerializer, UserCreateSerializer,
                           UserSerializer, CategorySerializer, GenreSerializer,
                           TitleGETSerializer, TitleSerializer,
@@ -94,18 +97,21 @@ class GetTokenViewSet(mixins.CreateModelMixin,
 class GenreViewSet(CreateRetrieveDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    lookup_field = 'slug'
 
 
 class CategoryViewSet(CreateRetrieveDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    permission_classes = [SuperUserOrAdmin | AnonimReadOnly]
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('category_slug', 'genre_slug', 'name', 'year')
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -115,7 +121,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Review."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
+    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+                          permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
 
@@ -126,7 +133,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """Получаем объект класса Review у объекта класса Title."""
     def get_queryset(self):
         title = self.get_title()
-        return title.reviews
+        return title.reviews.all()
 
     """Создаем объект класса Review у объекта класса Title."""
     def perform_create(self, serializer):
@@ -138,7 +145,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Comment."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
+    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+                          permissions.IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
 
@@ -151,7 +159,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Получаем объект класса Comment у объекта класса Review."""
     def get_queryset(self):
         review = self.get_review()
-        return review.comments
+        return review.comments.all()
 
     """Создание объекта класса Comment у объекта класса Review."""
     def perform_create(self, serializer):
