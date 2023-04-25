@@ -1,3 +1,4 @@
+from api.filters import TitleFilter
 from api.mixins import CreateRetrieveDestroyViewSet
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -10,7 +11,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title, User
 
-from .permissions import SuperUserOrAdmin, SuperUserOrAdminOrModeratorOrAuthor
+from .permissions import (AnonimReadOnly, SuperUserOrAdmin,
+                          SuperUserOrAdminOrModeratorOrAuthor)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
                           ReviewSerializer, TitleGETSerializer,
@@ -19,7 +21,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """Вьюсет для работы с объектами класса User"""
+    """Вьюсет для работы с объектами класса User."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -32,6 +34,7 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=[SuperUserOrAdminOrModeratorOrAuthor,
                                 permissions.IsAuthenticated])
     def me(self, request):
+        """Поведение объекта класса User."""
         user = request.user
         if request.method == 'PATCH':
             serializer = UserSerializer(user, data=request.data, partial=True)
@@ -79,6 +82,7 @@ class GetTokenViewSet(mixins.CreateModelMixin,
     permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
+        """Предоставляет пользователю JWT токен по коду подтверждения."""
         serializer = GetTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get('username')
@@ -95,20 +99,23 @@ class GenreViewSet(CreateRetrieveDestroyViewSet):
     """Вьюсет для создания объектов Genre."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    lookup_field = 'slug'
 
 
 class CategoryViewSet(CreateRetrieveDestroyViewSet):
     """Вьюсет для создания объектов Category."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания объектов Title."""
     queryset = Title.objects.all()
+    permission_classes = [SuperUserOrAdmin | AnonimReadOnly]
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('category_slug', 'genre_slug', 'name', 'year')
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         """Определяет какой сериализатор использвать для Title."""
@@ -118,22 +125,23 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Вьюсет для создания объектов Review."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
+    """Вьюсет для создания обьектов класса Review."""
+    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+                          permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
 
+    """Получаем объект класса Title по title_id."""
     def get_title(self):
-        """Получение объекта Title."""
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
+    """Получаем объект класса Review у объекта класса Title."""
     def get_queryset(self):
-        """Получение queryset объекта Title."""
         title = self.get_title()
-        return title.reviews
+        return title.reviews.all()
 
+    """Создаем объект класса Review у объекта класса Title."""
     def perform_create(self, serializer):
-        """Переопределение поведения объекта Review при сохранении."""
         serializer.save(
             author=self.request.user,
             title=self.get_title(),
@@ -141,24 +149,25 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """Вьюсет для создания объектов Comment."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
+    """Вьюсет для создания обьектов класса Comment."""
+    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+                          permissions.IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
 
+    """Получаем объект класса Review по title_id и review_id."""
     def get_review(self):
-        """Получение объекта Comment."""
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         return get_object_or_404(
             Review, pk=self.kwargs.get('review_id'), title=title)
 
+    """Получаем объект класса Comment у объекта класса Review."""
     def get_queryset(self):
-        """Получение queryset объекта Comment."""
         review = self.get_review()
-        return review.comments
+        return review.comments.all()
 
+    """Создание объекта класса Comment у объекта класса Review."""
     def perform_create(self, serializer):
-        """Переопределение поведения объекта Comment при сохранении."""
         serializer.save(
             author=self.request.user,
             review=self.get_review()

@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.core.validators import (
+    RegexValidator, MaxValueValidator, MinValueValidator)
+from django.db import models
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -85,6 +87,11 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Категория',
         help_text='Выберите категорию'
+    )
+    rating = models.IntegerField(
+        verbose_name='Рейтинг',
+        null=True,
+        default=None
     )
 
     class Meta:
@@ -189,7 +196,10 @@ class Review(models.Model):
     score = models.IntegerField(
         verbose_name=_('Рейтинг произведения'),
         help_text=_('Введите значение от 1 до 10'),
-        blank=False
+        validators=[
+            MinValueValidator(1, 'Допустимы значения от 1 до 10'),
+            MaxValueValidator(10, 'Допустимы значения от 1 до 10')
+        ]
     )
     pub_date = models.DateTimeField(
         verbose_name=_('Дата публикации'),
