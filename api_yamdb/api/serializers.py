@@ -6,18 +6,21 @@ from reviews.models import Category, Genre, Title, Review, Comment, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор для обьектов класса Category."""
     class Meta:
         model = Category
         exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для обьектов класса Genre."""
     class Meta:
         model = Genre
         exclude = ('id',)
 
 
 class TitleGETSerializer(serializers.ModelSerializer):
+    """Сериализатор для обьектов класса Title (GET)."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField(read_only=True)
@@ -27,6 +30,7 @@ class TitleGETSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_rating(self, obj):
+        """Получение значения среднего рейтинга."""
         rating = Review.objects.filter(
             title=obj.id
         ).aggregate(Avg('score'))['score__avg']
@@ -36,6 +40,7 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сериализатор для обьектов класса Title."""
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
@@ -51,11 +56,13 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, title):
+        """Определяет какой сериализатор выбрать."""
         serializer = TitleGETSerializer(title)
         return serializer.data
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для обьектов класса User."""
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
@@ -63,6 +70,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.Serializer):
+    """Сериализатор для создания объекта класса User."""
     username = serializers.RegexField(required=True,
                                       regex=r'^[\w.@+-]',
                                       max_length=150)
@@ -70,8 +78,7 @@ class UserCreateSerializer(serializers.Serializer):
                                    max_length=254)
 
     def validate_username(self, username):
-        """Запрещает пользователям присваивать себе имя me
-        и использовать повторные username и email."""
+        """Запрещает пользователям присваивать себе имя me."""
         if username == 'me':
             raise serializers.ValidationError(
                 'Использовать username "me" запрещено'
@@ -79,6 +86,7 @@ class UserCreateSerializer(serializers.Serializer):
         return username
 
     def validate(self, data):
+        """Запрещает пользователям использовать повторные username и email."""
         email = data.get('email')
         username = data.get('username')
         if (User.objects.filter(email=email).exists()
@@ -95,11 +103,13 @@ class UserCreateSerializer(serializers.Serializer):
 
 
 class GetTokenSerializer(serializers.Serializer):
+    """Сериализатор для получения токена JWT."""
     username = serializers.CharField(max_length=150, required=True)
     confirmation_code = serializers.CharField(required=True)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Review."""
     title = serializers.SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -133,6 +143,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Comment."""
     review = serializers.SlugRelatedField(
         slug_field='text',
         read_only=True
