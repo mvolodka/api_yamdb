@@ -9,6 +9,7 @@ class CreateRetrieveDestroyViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
+    """Миксин для работы с моделями Genre, Category."""
     permission_classes = [SuperUserOrAdmin | AnonimReadOnly]
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
