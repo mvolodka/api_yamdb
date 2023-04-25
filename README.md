@@ -58,6 +58,12 @@ pip install -r requirements.txt
 - Выполнить миграции:
 ```
 python manage.py migrate
+(python manage.py migrate --run-syncdb)
+```
+
+- Наполнить базу тестовыми данными:
+```
+python manage.py import_csv_to_db
 ```
 
 - Запустить проект:
