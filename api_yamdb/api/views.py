@@ -1,22 +1,21 @@
+from api.mixins import CreateRetrieveDestroyViewSet
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework import filters, mixins, permissions, status, viewsets
-from django_filters.rest_framework import DjangoFilterBackend
-
-from api.mixins import CreateRetrieveDestroyViewSet
-from reviews.models import Category, Genre, Title
-from reviews.models import User, Review, Title
+from reviews.models import Category, Genre, Review, Title, User
 
 from .permissions import SuperUserOrAdmin, SuperUserOrAdminOrModeratorOrAuthor
-from .serializers import (GetTokenSerializer, UserCreateSerializer,
-                          UserSerializer, CategorySerializer, GenreSerializer,
-                          TitleGETSerializer, TitleSerializer,
-                          CommentSerializer, ReviewSerializer)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, GetTokenSerializer,
+                          ReviewSerializer, TitleGETSerializer,
+                          TitleSerializer, UserCreateSerializer,
+                          UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -74,6 +73,7 @@ class CreateUserViewSet(mixins.CreateModelMixin,
 
 class GetTokenViewSet(mixins.CreateModelMixin,
                       viewsets.GenericViewSet):
+    """Вьюсет для получения токена."""
     queryset = User.objects.all()
     serializer_class = GetTokenSerializer
     permission_classes = (permissions.AllowAny,)
@@ -92,40 +92,48 @@ class GetTokenViewSet(mixins.CreateModelMixin,
 
 
 class GenreViewSet(CreateRetrieveDestroyViewSet):
+    """Вьюсет для создания объектов Genre."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
 
 class CategoryViewSet(CreateRetrieveDestroyViewSet):
+    """Вьюсет для создания объектов Category."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет для создания объектов Title."""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('category_slug', 'genre_slug', 'name', 'year')
 
     def get_serializer_class(self):
+        """Определяет какой сериализатор использвать для Title."""
         if self.request.method == 'GET':
             return TitleGETSerializer
         return TitleSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Вьюсет для создания объектов Review."""
     permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
 
     def get_title(self):
+        """Получение объекта Title."""
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     def get_queryset(self):
+        """Получение queryset объекта Title."""
         title = self.get_title()
         return title.reviews
 
     def perform_create(self, serializer):
+        """Переопределение поведения объекта Review при сохранении."""
         serializer.save(
             author=self.request.user,
             title=self.get_title(),
@@ -133,20 +141,24 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет для создания объектов Comment."""
     permission_classes = [SuperUserOrAdminOrModeratorOrAuthor]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
 
     def get_review(self):
+        """Получение объекта Comment."""
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         return get_object_or_404(
             Review, pk=self.kwargs.get('review_id'), title=title)
 
     def get_queryset(self):
+        """Получение queryset объекта Comment."""
         review = self.get_review()
         return review.comments
 
     def perform_create(self, serializer):
+        """Переопределение поведения объекта Comment при сохранении."""
         serializer.save(
             author=self.request.user,
             review=self.get_review()
