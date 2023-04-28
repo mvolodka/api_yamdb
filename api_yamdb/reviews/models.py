@@ -18,19 +18,19 @@ class Genre(models.Model):
     """Модель для создания обьектов класса Genre."""
     name = models.CharField(
         max_length=256,
-        verbose_name='Hазвание',
+        verbose_name=_('Hазвание'),
         db_index=True
     )
     slug = models.SlugField(
         max_length=50,
-        verbose_name='slug',
+        verbose_name=_('slug'),
         validators=[validate_slug],
         unique=True
     )
 
     class Meta:
-        verbose_name = 'Жанр',
-        verbose_name_plural = 'Жанры',
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
     def __str__(self):
@@ -41,19 +41,19 @@ class Category(models.Model):
     """Модель для создания обьектов класса Category."""
     name = models.CharField(
         max_length=256,
-        verbose_name='Hазвание',
+        verbose_name=_('Hазвание'),
         db_index=True
     )
     slug = models.SlugField(
         max_length=50,
-        verbose_name='slug',
+        verbose_name=_('slug'),
         validators=[validate_slug],
         unique=True
     )
 
     class Meta:
-        verbose_name = 'Категория',
-        verbose_name_plural = 'Категории',
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
         ordering = ('name',)
 
     def __str__(self):
@@ -64,16 +64,16 @@ class Title(models.Model):
     """Модель для создания обьектов класса Title."""
     name = models.CharField(
         max_length=100,
-        verbose_name='Hазвание',
+        verbose_name=_('Hазвание'),
         db_index=True
     )
     year = models.IntegerField(
-        verbose_name='Год выпуска',
+        verbose_name=_('Год выпуска'),
         validators=[validate_year],
         db_index=True
     )
     description = models.TextField(
-        verbose_name='Описание',
+        verbose_name=_('Описание'),
         blank=True,
         null=True,
     )
@@ -81,18 +81,18 @@ class Title(models.Model):
         Genre,
         through='GenreTitle',
         related_name='titles',
-        verbose_name='Жанр'
+        verbose_name=_('Жанр')
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True,
         related_name='titles',
-        verbose_name='Категория',
-        help_text='Выберите категорию'
+        verbose_name=_('Категория'),
+        help_text=_('Выберите категорию')
     )
     rating = models.IntegerField(
-        verbose_name='Рейтинг',
+        verbose_name=_('Рейтинг'),
         null=True,
         default=None
     )
@@ -102,12 +102,15 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
         ordering = ('-year', 'name')
 
+    def __str__(self):
+        return self.name
+
 
 class User(AbstractUser):
     """Модель для создания обьектов класса User."""
     username = models.CharField(
         max_length=150,
-        verbose_name='Имя пользователя',
+        verbose_name=_('Имя пользователя'),
         unique=True,
         db_index=True,
         validators=[RegexValidator(
@@ -117,33 +120,33 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         max_length=254,
-        verbose_name='email',
+        verbose_name=_('email'),
         unique=True
     )
     first_name = models.CharField(
         max_length=150,
-        verbose_name='имя',
+        verbose_name=_('имя'),
         blank=True
     )
     last_name = models.CharField(
         max_length=150,
-        verbose_name='фамилия',
+        verbose_name=_('фамилия'),
         blank=True
     )
     bio = models.TextField(
-        verbose_name='биография',
+        verbose_name=_('биография'),
         blank=True
     )
     role = models.CharField(
         max_length=20,
-        verbose_name='роль',
+        verbose_name=_('роль'),
         choices=CHOICES,
         default='user'
     )
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = _('Пользователь')
+        verbose_name_plural = _('Пользователи')
         ordering = ['-id']
 
     def __str__(self):
@@ -164,12 +167,12 @@ class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        verbose_name='Произведение'
+        verbose_name=_('Произведение')
     )
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        verbose_name='Жанр'
+        verbose_name=_('Жанр')
     )
 
     class Meta:
@@ -185,7 +188,7 @@ class Review(models.Model):
         Title,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name=_('Отзыв'),
+        verbose_name=_('Произведение'),
         help_text=_('Отзыв к произведению')
     )
     text = models.TextField(
