@@ -131,18 +131,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
 
-    """Получаем объект класса Title по title_id."""
     def get_title(self):
         """Получаем объект класса Title по title_id."""
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
-    """Получаем объект класса Review у объекта класса Title."""
     def get_queryset(self):
         """Получаем объект класса Review у объекта класса Title."""
         title = self.get_title()
         return title.reviews.all()
 
-    """Создаем объект класса Review у объекта класса Title."""
     def perform_create(self, serializer):
         """Создаем объект класса Review у объекта класса Title."""
         serializer.save(
@@ -158,20 +155,17 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
 
-    """Получаем объект класса Review по title_id и review_id."""
     def get_review(self):
         """Получаем объект класса Review по title_id и review_id."""
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         return get_object_or_404(
             Review, pk=self.kwargs.get('review_id'), title=title)
 
-    """Получаем объект класса Comment у объекта класса Review."""
     def get_queryset(self):
         """Получаем объект класса Comment у объекта класса Review."""
         review = self.get_review()
         return review.comments.all()
 
-    """Создание объекта класса Comment у объекта класса Review."""
     def perform_create(self, serializer):
         """Создание объекта класса Comment у объекта класса Review."""
         serializer.save(
