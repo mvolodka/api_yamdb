@@ -89,8 +89,10 @@ class UserCreateSerializer(serializers.Serializer):
         """Запрещает пользователям использовать повторные username и email."""
         email = data.get('email')
         username = data.get('username')
-        queryset = User.objects.filter(Q(email=email) | Q(username=username)).first()
-        if queryset and (queryset.username != username or queryset.email != email):
+        queryset = User.objects.filter(Q(email=email)
+                                       | Q(username=username)).first()
+        if queryset and (queryset.username != username
+                         or queryset.email != email):
             raise serializers.ValidationError(
                 'Пользователь с таким username/email уже существует'
             )

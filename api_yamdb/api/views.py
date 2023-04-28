@@ -30,12 +30,12 @@ def send_confirmation_code(username, email, confirmation_code):
     }
     message = render_to_string('send_email.txt', context)
     send_mail(
-            subject='Ваш confirmation_code',
-            message=message,
-            from_email='YamDB@yandex.ru',
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        subject='Ваш confirmation_code',
+        message=message,
+        from_email='YamDB@yandex.ru',
+        recipient_list=[email],
+        fail_silently=False,
+    )
 
 
 class UserViewSet(viewsets.ModelViewSet):
