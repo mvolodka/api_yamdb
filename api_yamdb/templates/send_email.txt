@@ -1,0 +1,7 @@
+Username: {{username}}
+
+Email: {{email}}
+
+Сообщение:
+Ваш confirmation_code: {{confirmation_code}}, направьте его на адрес 'api/v1/auth/token/',
+для получения токена. 
