@@ -1,4 +1,4 @@
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -89,17 +89,14 @@ class UserCreateSerializer(serializers.Serializer):
         """Запрещает пользователям использовать повторные username и email."""
         email = data.get('email')
         username = data.get('username')
-        if (User.objects.filter(email=email).exists()
-                and not User.objects.filter(username=username)):
+        queryset = User.objects.filter(Q(email=email)
+                                       | Q(username=username)).first()
+        if queryset and (queryset.username != username
+                         or queryset.email != email):
             raise serializers.ValidationError(
-                'Пользователь с таким email уже существует'
+                'Пользователь с таким username/email уже существует'
             )
-        if (User.objects.filter(username=username).exists()
-                and not User.objects.filter(email=email)):
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
-            )
-        return data
+        return super().validate(data)
 
 
 class GetTokenSerializer(serializers.Serializer):

@@ -3,6 +3,7 @@ from api.mixins import CreateRetrieveDestroyViewSet
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -12,12 +13,29 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title, User
 
 from .permissions import (AnonimReadOnly, SuperUserOrAdmin,
-                          SuperUserOrAdminOrModeratorOrAuthor)
+                          Moderator, Author)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
                           ReviewSerializer, TitleGETSerializer,
                           TitleSerializer, UserCreateSerializer,
                           UserSerializer)
+
+
+def send_confirmation_code(username, email, confirmation_code):
+    """Отправка письма с кодом подтверждения на указанный email"""
+    context = {
+        'username': username,
+        'email': email,
+        'confirmation_code': confirmation_code
+    }
+    message = render_to_string('send_email.txt', context)
+    send_mail(
+        subject='Ваш confirmation_code',
+        message=message,
+        from_email='YamDB@yandex.ru',
+        recipient_list=[email],
+        fail_silently=False,
+    )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -31,18 +49,16 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
 
     @action(methods=['patch', 'get'], detail=False,
-            permission_classes=[SuperUserOrAdminOrModeratorOrAuthor,
+            permission_classes=[SuperUserOrAdmin | Moderator | Author,
                                 permissions.IsAuthenticated])
     def me(self, request):
         """Поведение объекта класса User."""
         user = request.user
         if request.method == 'PATCH':
             serializer = UserSerializer(user, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save(role=request.user.role)
-                return Response(serializer.data)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(role=request.user.role)
+            return Response(serializer.data)
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
@@ -61,16 +77,9 @@ class CreateUserViewSet(mixins.CreateModelMixin,
         serializer.is_valid(raise_exception=True)
         user, _ = User.objects.get_or_create(**serializer.validated_data)
         confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            subject='Ваш confirmation_code',
-            message=(f'{user.username}, '
-                     f'Ваш код подтверждения: {confirmation_code}, '
-                     'отправьте его на адрес api/v1/auth/token, '
-                     'для получения токена'),
-            from_email='YamDB@yandex.ru',
-            recipient_list=[request.data.get('email')],
-            fail_silently=False,
-        )
+        email = request.data.get('email')
+        username = request.data.get('username')
+        send_confirmation_code(username, email, confirmation_code)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -126,7 +135,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Review."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+    permission_classes = [SuperUserOrAdmin | Moderator | Author,
                           permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
@@ -150,7 +159,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Comment."""
-    permission_classes = [SuperUserOrAdminOrModeratorOrAuthor,
+    permission_classes = [SuperUserOrAdmin | Moderator | Author,
                           permissions.IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
