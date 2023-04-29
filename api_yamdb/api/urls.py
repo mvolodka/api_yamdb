@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from api.views import (
     CategoryViewSet, GenreViewSet, TitleViewSet,
-    CreateUserViewSet, GetTokenViewSet, UserViewSet,
+    CreateOrSignupUserViewSet, GetTokenViewSet, UserViewSet,
     CommentViewSet, ReviewViewSet
 )
 
@@ -24,7 +24,7 @@ router_v1.register(
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/signup/',
-         CreateUserViewSet.as_view({'post': 'create'}),
+         CreateOrSignupUserViewSet.as_view({'post': 'create'}),
          name='signup'),
     path('v1/auth/token/',
          GetTokenViewSet.as_view({'post': 'create'}),
