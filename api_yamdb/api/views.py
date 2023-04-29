@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title, User, Comment
 
 from .permissions import (AnonimReadOnly, SuperUserOrAdmin,
                           Moderator, Author)
@@ -147,7 +147,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Получаем объект класса Review у объекта класса Title."""
         title = self.get_title()
-        return title.reviews.all()
+        return Review.objects.select_related('author').filter(title=title)
 
     def perform_create(self, serializer):
         """Создаем объект класса Review у объекта класса Title."""
@@ -173,7 +173,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Получаем объект класса Comment у объекта класса Review."""
         review = self.get_review()
-        return review.comments.all()
+        return Comment.objects.select_related('author').filter(review=review)
 
     def perform_create(self, serializer):
         """Создание объекта класса Comment у объекта класса Review."""
