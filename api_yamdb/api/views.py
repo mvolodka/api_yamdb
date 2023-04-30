@@ -2,6 +2,7 @@ from api.filters import TitleFilter
 from api.mixins import CreateRetrieveDestroyViewSet
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,10 +11,13 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+
+
 from reviews.models import Category, Genre, Review, Title, User, Comment
 
 from .permissions import (IsAnonymReadOnly, IsAdmin,
                           IsModerator, IsAuthor)
+
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
                           ReviewSerializer, TitleGETSerializer,
@@ -120,9 +124,10 @@ class CategoryViewSet(CreateRetrieveDestroyViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания объектов Title."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = [IsAdmin | IsAnonymReadOnly]
     serializer_class = TitleSerializer
+    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 

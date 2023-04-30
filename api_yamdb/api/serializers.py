@@ -23,20 +23,11 @@ class TitleGETSerializer(serializers.ModelSerializer):
     """Сериализатор для обьектов класса Title (GET)."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
         fields = '__all__'
-
-    def get_rating(self, obj):
-        """Получение значения среднего рейтинга."""
-        rating = Review.objects.filter(
-            title=obj.id
-        ).aggregate(Avg('score'))['score__avg']
-        if rating is not None:
-            return round(rating)
-        return None
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -102,6 +93,7 @@ class UserCreateSerializer(serializers.Serializer):
     def create(self, validated_data):
         user, _ = User.objects.get_or_create(**validated_data)
         return user
+
 
 
 class GetTokenSerializer(serializers.Serializer):
