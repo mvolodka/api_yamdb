@@ -105,4 +105,3 @@ class TitleAdmin(admin.ModelAdmin):
         return None
 
     get_rating.short_description = 'Рейтинг'
-
