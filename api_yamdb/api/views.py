@@ -11,9 +11,13 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Comment, Genre, Review, Title, User
 
-from .permissions import IsAdmin, IsAnonymReadOnly, IsAuthor, IsModerator
+
+from reviews.models import Category, Genre, Review, Title, User, Comment
+
+from .permissions import (IsAnonymReadOnly, IsAdmin,
+                          IsModerator, IsAuthor)
+
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
                           ReviewSerializer, TitleGETSerializer,
@@ -75,7 +79,7 @@ class CreateOrSignupUserViewSet(mixins.CreateModelMixin,
         отправляет на почту пользователя код подтверждения."""
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user, _ = User.objects.get_or_create(**serializer.validated_data)
+        user = serializer.save()
         confirmation_code = default_token_generator.make_token(user)
         email = request.data.get('email')
         username = request.data.get('username')

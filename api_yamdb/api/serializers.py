@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -89,6 +89,11 @@ class UserCreateSerializer(serializers.Serializer):
                 'Пользователь с таким username/email уже существует'
             )
         return super().validate(data)
+    
+    def create(self, validated_data):
+        user, _ = User.objects.get_or_create(**validated_data)
+        return user
+
 
 
 class GetTokenSerializer(serializers.Serializer):

@@ -90,7 +90,6 @@ class Title(models.Model):
         related_name='titles',
         verbose_name=_('Категория'),
         help_text=_('Выберите категорию')
-    )
 
     class Meta:
         verbose_name = 'Произведение'
