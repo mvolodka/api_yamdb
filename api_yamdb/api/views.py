@@ -18,7 +18,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
                           ReviewSerializer, TitleGETSerializer,
                           TitleSerializer, UserCreateSerializer,
-                          UserSerializer)
+                          UserSerializer, ReadOnlyReviewSerializer)
 
 
 def send_confirmation_code(username, email, confirmation_code):
@@ -155,6 +155,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
             author=self.request.user,
             title=self.get_title(),
         )
+
+    def get_serializer_class(self):
+        """Определяет какой сериализатор использвать для Review."""
+        if self.request.method == 'POST':
+            return ReviewSerializer
+        return ReadOnlyReviewSerializer
 
 
 class CommentViewSet(viewsets.ModelViewSet):
