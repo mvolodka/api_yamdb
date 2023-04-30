@@ -90,12 +90,6 @@ class Title(models.Model):
         related_name='titles',
         verbose_name=_('Категория'),
         help_text=_('Выберите категорию')
-    )
-    rating = models.IntegerField(
-        verbose_name=_('Рейтинг'),
-        null=True,
-        default=None
-    )
 
     class Meta:
         verbose_name = 'Произведение'
