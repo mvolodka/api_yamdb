@@ -1,14 +1,15 @@
 from rest_framework import permissions
 
 
-class AnonimReadOnly(permissions.BasePermission):
+class IsAnonymReadOnly(permissions.BasePermission):
     """Разрешает анонимному пользователю только безопасные запросы."""
 
     def has_permission(self, request, view):
-        return request.method in permissions.SAFE_METHODS
+        if request.user.is_anonymous:
+            return request.method in permissions.SAFE_METHODS
 
 
-class SuperUserOrAdmin(permissions.BasePermission):
+class IsAdmin(permissions.BasePermission):
     """
     Предоставляет права на осуществление запросов
     только суперпользователю Джанго, админу Джанго или
@@ -19,24 +20,38 @@ class SuperUserOrAdmin(permissions.BasePermission):
         return (
             request.user.is_authenticated
             and (request.user.is_superuser
-                 or request.user.is_admin())
+                 or request.user.is_admin)
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.is_authenticated
+            and (request.user.is_superuser
+                 or request.user.is_admin)
         )
 
 
-class SuperUserOrAdminOrModeratorOrAuthor(permissions.BasePermission):
+class IsModerator(permissions.BasePermission):
     """
-    Разрешает анонимному пользователю только безопасные запросы.
-    Доступ к запросам PATCH и DELETE предоставляется только
-    суперпользователю Джанго, админу Джанго, аутентифицированным пользователям
-    с ролью admin или moderator, а также автору объекта.
+    Предоставляет права на осуществление запросов
+    пользователю с ролью модертор
     """
 
     def has_object_permission(self, request, view, obj):
         return (
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated
-            and (request.user.is_superuser
-                 or request.user.is_admin()
-                 or request.user.is_moderator()
-                 or request.user == obj.author)
+            and request.user.is_moderator
+        )
+
+
+class IsAuthor(permissions.BasePermission):
+    """
+    Предоставляет права на осуществление запросов
+    автору объекта
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.is_authenticated and request.user == obj.author
         )
