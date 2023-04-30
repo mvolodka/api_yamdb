@@ -1,6 +1,6 @@
 from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
-from .permissions import SuperUserOrAdmin, AnonimReadOnly
+from .permissions import IsAdmin, IsAnonymReadOnly
 
 
 class CreateRetrieveDestroyViewSet(
@@ -10,7 +10,7 @@ class CreateRetrieveDestroyViewSet(
     viewsets.GenericViewSet,
 ):
     """Миксин для работы с моделями Genre, Category."""
-    permission_classes = [SuperUserOrAdmin | AnonimReadOnly]
+    permission_classes = [IsAdmin | IsAnonymReadOnly]
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)

@@ -12,8 +12,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title, User
 
-from .permissions import (AnonimReadOnly, SuperUserOrAdmin,
-                          Moderator, Author)
+from .permissions import (IsAnonymReadOnly, IsAdmin,
+                          IsModerator, IsAuthor)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
                           ReviewSerializer, TitleGETSerializer,
@@ -44,12 +44,12 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
-    permission_classes = (SuperUserOrAdmin,)
+    permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 
     @action(methods=['patch', 'get'], detail=False,
-            permission_classes=[SuperUserOrAdmin | Moderator | Author,
+            permission_classes=[IsAdmin | IsModerator | IsAuthor,
                                 permissions.IsAuthenticated])
     def me(self, request):
         """Поведение объекта класса User."""
@@ -63,15 +63,15 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class CreateUserViewSet(mixins.CreateModelMixin,
-                        viewsets.GenericViewSet):
-    """Вьюсет для создания обьектов класса User."""
+class CreateOrSignupUserViewSet(mixins.CreateModelMixin,
+                                viewsets.GenericViewSet):
+    """Вьюсет для авторизации/регистрации пользователей."""
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
     permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
-        """Создает объект класса User и
+        """Создает или получает объект класса User и
         отправляет на почту пользователя код подтверждения."""
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -121,7 +121,7 @@ class CategoryViewSet(CreateRetrieveDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания объектов Title."""
     queryset = Title.objects.all()
-    permission_classes = [SuperUserOrAdmin | AnonimReadOnly]
+    permission_classes = [IsAdmin | IsAnonymReadOnly]
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -135,7 +135,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Review."""
-    permission_classes = [SuperUserOrAdmin | Moderator | Author,
+    permission_classes = [IsAdmin | IsModerator | IsAuthor,
                           permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
@@ -159,7 +159,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для создания обьектов класса Comment."""
-    permission_classes = [SuperUserOrAdmin | Moderator | Author,
+    permission_classes = [IsAdmin | IsModerator | IsAuthor,
                           permissions.IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
