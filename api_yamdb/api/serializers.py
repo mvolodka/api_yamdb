@@ -106,7 +106,7 @@ class GetTokenSerializer(serializers.Serializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Review."""
+    """Сериализатор для модели Review (POST)."""
     title = serializers.SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -120,12 +120,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Запрещает пользователю на одно произведение
         оставлять более одного отзыва."""
-        title = get_object_or_404(
-            Title, pk=self.context.get('view').kwargs.get('title_id'))
         request = self.context.get('request')
-        author = request.user
 
         if request.method == 'POST':
+            title = get_object_or_404(
+                Title, pk=self.context.get('view').kwargs.get('title_id'))
+            author = request.user
             if Review.objects.filter(
                 author=author, title=title
             ).exists():
@@ -133,6 +133,23 @@ class ReviewSerializer(serializers.ModelSerializer):
                     'На одно произведение пользователь может'
                     'оставить только один отзыв.')
         return data
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
+class ReadOnlyReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Review."""
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = Review
