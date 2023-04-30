@@ -75,7 +75,7 @@ class CreateOrSignupUserViewSet(mixins.CreateModelMixin,
         отправляет на почту пользователя код подтверждения."""
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user, _ = User.objects.get_or_create(**serializer.validated_data)
+        user = serializer.save()
         confirmation_code = default_token_generator.make_token(user)
         email = request.data.get('email')
         username = request.data.get('username')
