@@ -121,12 +121,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Запрещает пользователю на одно произведение
         оставлять более одного отзыва."""
-        title = get_object_or_404(
-            Title, pk=self.context.get('view').kwargs.get('title_id'))
         request = self.context.get('request')
-        author = request.user
 
         if request.method == 'POST':
+            title = get_object_or_404(
+                Title, pk=self.context.get('view').kwargs.get('title_id'))
+            author = request.user
             if Review.objects.filter(
                 author=author, title=title
             ).exists():
