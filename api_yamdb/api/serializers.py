@@ -106,7 +106,7 @@ class GetTokenSerializer(serializers.Serializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Review."""
+    """Сериализатор для модели Review (POST)."""
     title = serializers.SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -133,6 +133,23 @@ class ReviewSerializer(serializers.ModelSerializer):
                     'На одно произведение пользователь может'
                     'оставить только один отзыв.')
         return data
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
+class ReadOnlyReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Review."""
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = Review
