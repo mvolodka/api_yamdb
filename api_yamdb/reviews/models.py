@@ -1,11 +1,10 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import (
-    RegexValidator, MaxValueValidator, MinValueValidator)
-from django.db import models
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .validators import validate_year, validate_slug
+from .validators import validate_slug, validate_year
 
 CHOICES = (
     ('user', 'Пользователь'),
@@ -90,11 +89,6 @@ class Title(models.Model):
         related_name='titles',
         verbose_name=_('Категория'),
         help_text=_('Выберите категорию')
-    )
-    rating = models.IntegerField(
-        verbose_name=_('Рейтинг'),
-        null=True,
-        default=None
     )
 
     class Meta:

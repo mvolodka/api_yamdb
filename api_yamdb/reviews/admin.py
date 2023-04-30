@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Avg
 
 from .models import Category, Comment, Genre, GenreTitle, Review, Title, User
 
@@ -87,9 +88,21 @@ class TitleAdmin(admin.ModelAdmin):
         'year',
         'description',
         'category',
-        'rating',
+        'get_rating',
     )
     list_editable = ('category',)
     search_fields = ('name',)
     list_filter = ('year',)
     empty_value_display = '-пусто-'
+
+    def get_rating(self, obj):
+        """Получаем среднюю оценку произведения по оценкам пользователей"""
+        rating = Review.objects.filter(
+            title=obj.id
+        ).aggregate(Avg('score'))['score__avg']
+        if rating is not None:
+            return round(rating)
+        return None
+
+    get_rating.short_description = 'Рейтинг'
+

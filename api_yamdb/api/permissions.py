@@ -1,14 +1,15 @@
 from rest_framework import permissions
 
 
-class AnonimReadOnly(permissions.BasePermission):
+class IsAnonymReadOnly(permissions.BasePermission):
     """Разрешает анонимному пользователю только безопасные запросы."""
 
     def has_permission(self, request, view):
-        return request.method in permissions.SAFE_METHODS
+        if request.user.is_anonymous:
+            return request.method in permissions.SAFE_METHODS
 
 
-class SuperUserOrAdmin(permissions.BasePermission):
+class IsAdmin(permissions.BasePermission):
     """
     Предоставляет права на осуществление запросов
     только суперпользователю Джанго, админу Джанго или
@@ -30,7 +31,7 @@ class SuperUserOrAdmin(permissions.BasePermission):
         )
 
 
-class Moderator(permissions.BasePermission):
+class IsModerator(permissions.BasePermission):
     """
     Предоставляет права на осуществление запросов
     пользователю с ролью модертор
@@ -44,7 +45,7 @@ class Moderator(permissions.BasePermission):
         )
 
 
-class Author(permissions.BasePermission):
+class IsAuthor(permissions.BasePermission):
     """
     Предоставляет права на осуществление запросов
     автору объекта
