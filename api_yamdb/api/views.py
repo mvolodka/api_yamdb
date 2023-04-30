@@ -11,18 +11,14 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
-
-from reviews.models import Category, Genre, Review, Title, User, Comment
-
-from .permissions import (IsAnonymReadOnly, IsAdmin,
-                          IsModerator, IsAuthor)
-
+from .permissions import IsAdmin, IsAnonymReadOnly, IsAuthor, IsModerator
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
-                          ReviewSerializer, TitleGETSerializer,
-                          TitleSerializer, UserCreateSerializer,
-                          UserSerializer, ReadOnlyReviewSerializer)
+                          ReadOnlyReviewSerializer, ReviewSerializer,
+                          TitleGETSerializer, TitleSerializer,
+                          UserCreateSerializer, UserSerializer)
 
 
 def send_confirmation_code(username, email, confirmation_code):
