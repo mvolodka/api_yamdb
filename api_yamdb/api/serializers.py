@@ -116,17 +116,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         """Запрещает пользователю на одно произведение
         оставлять более одного отзыва."""
         request = self.context.get('request')
-
-        if request.method == 'POST':
-            title = get_object_or_404(
-                Title, pk=self.context.get('view').kwargs.get('title_id'))
-            author = request.user
-            if Review.objects.filter(
-                author=author, title=title
-            ).exists():
-                raise serializers.ValidationError(
-                    'На одно произведение пользователь может'
-                    'оставить только один отзыв.')
+        title = get_object_or_404(
+            Title, pk=self.context.get('view').kwargs.get('title_id'))
+        author = request.user
+        if Review.objects.filter(
+            author=author, title=title
+        ).exists():
+            raise serializers.ValidationError(
+                'На одно произведение пользователь может'
+                'оставить только один отзыв.')
         return data
 
     class Meta:
